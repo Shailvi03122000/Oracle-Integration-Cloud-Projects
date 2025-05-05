@@ -1,0 +1,119 @@
+Req : - Create an integration to get employee details as request payload and generate a CSV file based on this employee data and send over the mail.
+
+
+Sol: 
+ Create App-Driven Integration using REST Adapter having trigger connection.
+Stage File - to create the file
+Notification - send an email
+
+
+===== Create a request JSON  Payload ====
+
+{
+	"RequestData":
+[
+{
+	"Name" : "Alex",
+	"DOB"  : "01-01-2000",
+	"Role" : "IT-Security",
+	"DOJ"  : "05-11-2024" 
+},
+
+{	"Name" : "Alex",
+	"DOB"  : "01-01-2000",
+	"Role" : "IT-Security",
+	"DOJ"  : "05-11-2024"
+} 
+]
+}
+
+Now we will create sample file so that OIC take the reference of that sample file to create CSV file.
+
+Create CSV sample file so that OIC will take this--
+Name, DOB,Role,DOJ,CreationDate,CreatedBy,IntegrationName
+Alex,19-03-2025,IT,19-03-2025,19-03-2025,XYZ,XYZ
+
+
+== Response Payload ===
+
+{
+	"Status" : "Success/Error",
+	"FileName" : "xyz.csv"
+}
+
+--------- Create App driven 
+Give name - Stage_DEMO_01 
+Package name - abc
+Add the trigger connection which we already created now configure --
+Endpoint name - StartRest
+Enpoint's URI - /generateFile
+Operation - POST
+Check both option of configure a request payload and receive the response - next
+Drag the JSON Request Payload
+Drag the JSON Response Payload in configure Response page
+Continue and finish 
+
+For creating the file -- 
+
+It is better to create variable 
+
+Assign it after Trigger conn 
+Name - default assign 
+Var_FileName = 'XX_EMP_001.csv' -- to generate the file we use this name
+
+For creating the file in OIC we have Stage File (Write File)
+
+Want to call ur action? - WriteFile_Stage
+Choose stage file operation - Write File
+File name - drag var_FileName
+O/p directory - '/temp'
+Continue -- 
+Drag the sample file 
+Enter the record name - RN
+Enter the recordSet Name - RSN
+Rest option we can keep the same
+Continue and finish
+Then click on MAP to WRITE_FILE_STAGE
+Request Wrapper to response map them 
+Created Date -- use current_date function by creating a target node 
+OIC instance ID
+Created by -  - Integration metadata details - Runtime details- Invoked by
+Integration name -Integration metadata details  - Integration name
+
+Validate it and go back
+
+Now the stage file that is created it will return file reference in repsonse - file is already created and they will give link of the file
+
+Add Notification before Map of startrest
+
+Add the details in notification 
+TO - 'shailvi03122000@gmail.com'
+Cc - 
+From - 'no-reply@oracle.com'
+Subject - 'Stage File Learning'
+Body - 
+Hi Team,
+Please find the attached CSV file which contains employee details.
+File Name : {p_FileName} --should be in braces 
+
+Regards,
+OIC Support Team
+
+Parameters - if we want to add File name too in the body so we can add parameter -- we cant do this in body so we are creating here just for notif only
+Parameter naeme - P_File name drag value -- variable - var_File name 
+Attachments - Give value --- under WriteFile_stage --take File reference under ICS file.
+Request one is -- mapper ignore this
+
+
+Goto MAP startRest -- 
+Provide response wrapper 
+Status - 'Success'
+File Name - var_FileName
+
+
+Remove business identifier 
+
+Save it , activate it and run it.
+
+
+
